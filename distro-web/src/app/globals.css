@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --blue: #1A4BDB;
+  --blue-dark: #1239B0;
+  --blue-light: #E8EFFE;
+  --blue-pale: #F0F4FF;
+  --green: #00C46F;
+  --green-dark: #00A05A;
+  --green-light: #E0FAF0;
+  --ink: #0D1120;
+  --off-white: #F7F9FF;
+  --gray-200: #E0E4F0;
+  --gray-400: #9BA3BF;
+  --gray-600: #5C6480;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--off-white);
+  color: var(--ink);
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+/* Ticker / marquee */
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker 30s linear infinite;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* Price strikethrough */
+.price-mrp {
+  text-decoration: line-through;
+  color: var(--gray-400);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--gray-200);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gray-400);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-600);
+}

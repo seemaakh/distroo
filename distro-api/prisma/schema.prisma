@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id            String    @id @default(cuid())
+  phone         String    @unique
+  email         String?   @unique
+  emailVerified Boolean   @default(false)
+  passwordHash  String
+  role          Role      @default(BUYER)
+  storeName     String?
+  ownerName     String?
+  district      String?
+  address       String?
+  phoneVerified Boolean   @default(false)
+  status        Status    @default(ACTIVE)
+  creditLimit   Float     @default(0)
+  creditUsed    Float     @default(0)
+  otpCode       String?
+  otpExpiry     DateTime?
+  loginAttempts Int       @default(0)
+  lockedUntil   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions Session[]
+  orders   Order[]
+  ledger   Ledger[]
+  notes    CustomerNote[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  profileId String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id       String     @id @default(cuid())
+  name     String
+  emoji    String?
+  parentId String?
+  parent   Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  children Category[] @relation("SubCategories")
+  products Product[]
+}
+
+model District {
+  id            String  @id @default(cuid())
+  name          String  @unique
+  deliveryFee   Float   @default(0)
+  active        Boolean @default(false)
+  estimatedDays Int     @default(3)
+}
+
+model Product {
+  id             String          @id @default(cuid())
+  name           String
+  brand          String?
+  description    String?         @db.Text
+  sku            String?         @unique
+  categoryId     String?
+  price          Float
+  mrp            Float?
+  unit           String          @default("piece")
+  moq            Int             @default(1)
+  stockQty       Int             @default(0)
+  imageUrl       String?
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  category       Category?       @relation(fields: [categoryId], references: [id])
+  orderItems     OrderItem[]
+  priceHistory   PriceHistory[]
+  stockMovements StockMovement[]
+}
+
+model PriceHistory {
+  id        String   @id @default(cuid())
+  productId String
+  oldPrice  Float
+  newPrice  Float
+  reason    String?
+  changedAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id               String          @id @default(cuid())
+  orderNumber      String          @unique
+  buyerId          String
+  status           OrderStatus     @default(PENDING)
+  paymentStatus    PayStatus       @default(UNPAID)
+  paymentMethod    PayMethod       @default(COD)
+  subtotal         Float
+  deliveryFee      Float           @default(0)
+  total            Float
+  deliveryDistrict String?
+  deliveryAddress  String?         @db.Text
+  deliveryLat      Decimal?        @db.Decimal(10, 8)
+  deliveryLng      Decimal?        @db.Decimal(11, 8)
+  notes            String?         @db.Text
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  buyer            Profile         @relation(fields: [buyerId], references: [id])
+  items            OrderItem[]
+  payments         Payment[]
+  activity         OrderActivity[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  name      String
+  price     Float
+  qty       Int
+  total     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Ledger {
+  id        String     @id @default(cuid())
+  buyerId   String
+  type      LedgerType
+  amount    Float
+  balance   Float
+  note      String?
+  orderId   String?
+  createdAt DateTime   @default(now())
+  buyer     Profile    @relation(fields: [buyerId], references: [id])
+}
+
+model Payment {
+  id          String    @id @default(cuid())
+  orderId     String
+  method      PayMethod
+  status      PayStatus @default(UNPAID)
+  amount      Float
+  reference   String?
+  rawResponse Json?
+  createdAt   DateTime  @default(now())
+  order       Order     @relation(fields: [orderId], references: [id])
+}
+
+model StockMovement {
+  id        String   @id @default(cuid())
+  productId String
+  type      MoveType
+  qty       Int
+  reason    String?
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model CustomerNote {
+  id        String   @id @default(cuid())
+  buyerId   String
+  note      String   @db.Text
+  createdAt DateTime @default(now())
+  buyer     Profile  @relation(fields: [buyerId], references: [id])
+}
+
+model OrderActivity {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  note      String?
+  createdAt DateTime    @default(now())
+  order     Order       @relation(fields: [orderId], references: [id])
+}
+
+model Announcement {
+  id        String    @id @default(cuid())
+  text      String
+  active    Boolean   @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  type      String
+  status    String   @default("sent")
+  messageId String?
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  BUYER
+}
+
+enum Status {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
+enum PayStatus {
+  UNPAID
+  PAID
+  PARTIAL
+  REFUNDED
+}
+
+enum PayMethod {
+  ESEWA
+  KHALTI
+  COD
+}
+
+enum LedgerType {
+  DEBIT
+  CREDIT
+}
+
+enum MoveType {
+  IN
+  OUT
+  ADJUSTMENT
+}

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISTRO — Help & FAQs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1A4BDB; --blue-dark: #1239B0; --blue-mid: #2557EF;
+    --blue-light: #E8EFFE; --blue-pale: #F0F4FF;
+    --green: #00C46F; --green-dark: #00A05A; --green-light: #E0FAF0;
+    --white: #ffffff; --off-white: #F7F9FF;
+    --gray-100: #F0F2F8; --gray-200: #E0E4F0; --gray-400: #9BA3BF;
+    --gray-600: #5C6480; --gray-800: #2A2F45; --ink: #0D1120;
+    --sans: 'Plus Jakarta Sans', sans-serif; --display: 'Space Grotesk', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--white); color: var(--ink); line-height: 1.6; overflow-x: hidden; }
+
+  .ticker-bar { background: var(--blue); color: rgba(255,255,255,0.65); font-family: var(--display); font-size: 11px; letter-spacing: 0.05em; padding: 9px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-inner { display: inline-flex; gap: 48px; animation: ticker 30s linear infinite; }
+  .ticker-inner span { color: var(--green); font-weight: 700; }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid var(--gray-200); padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .nav-logo { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--blue); letter-spacing: -0.02em; text-decoration: none; }
+  .nav-logo span { color: var(--green); }
+  .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 14px; color: var(--gray-600); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--blue); }
+  .nav-links a.active { font-weight: 700; border-bottom: 2px solid var(--blue); padding-bottom: 2px; }
+  .nav-cta { display: flex; align-items: center; gap: 12px; }
+  .btn-outline { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--blue); background: transparent; border: 1.5px solid var(--blue); padding: 8px 20px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+  .btn-outline:hover { background: var(--blue); color: white; }
+  .btn-solid { font-family: var(--sans); font-size: 13px; font-weight: 600; color: white; background: var(--blue); border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+  .btn-solid:hover { background: var(--blue-dark); }
+
+  .page-header { background: var(--off-white); border-bottom: 1px solid var(--gray-200); padding: 64px 80px 48px; }
+  .breadcrumb { font-family: var(--display); font-size: 12px; letter-spacing: 0.04em; color: var(--gray-400); margin-bottom: 20px; font-weight: 600; }
+  .breadcrumb a { color: var(--blue); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .page-title { font-family: var(--display); font-size: 56px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 28px; }
+  .page-title em { font-style: normal; color: var(--blue); }
+  .faq-search { display: flex; align-items: center; background: var(--white); border: 1.5px solid var(--gray-200); padding: 12px 20px; border-radius: 10px; gap: 12px; max-width: 500px; box-shadow: 0 2px 16px rgba(26,75,219,0.06); transition: all 0.2s; }
+  .faq-search:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,75,219,0.1); }
+  .faq-search input { background: transparent; border: none; outline: none; font-family: var(--sans); font-size: 14px; color: var(--ink); width: 100%; font-weight: 500; }
+  .faq-search input::placeholder { color: var(--gray-400); }
+  .search-icon { color: var(--gray-400); font-size: 17px; }
+  .result-count { font-family: var(--display); font-size: 11px; color: var(--gray-400); letter-spacing: 0.06em; margin-top: 14px; font-weight: 600; }
+
+  .faq-body { display: grid; grid-template-columns: 230px 1fr; gap: 0; min-height: 80vh; }
+
+  .faq-sidenav { border-right: 1px solid var(--gray-200); padding: 32px 20px; background: var(--white); position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto; }
+  .sidenav-label { font-family: var(--display); font-size: 10px; letter-spacing: 0.1em; color: var(--gray-400); text-transform: uppercase; font-weight: 700; margin-bottom: 10px; padding: 0 10px; }
+  .sidenav-list { list-style: none; }
+  .sidenav-item { margin-bottom: 2px; }
+  .sidenav-item a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; font-size: 13px; color: var(--gray-600); text-decoration: none; border-radius: 8px; transition: all 0.15s; font-weight: 500; }
+  .sidenav-item a:hover { background: var(--blue-light); color: var(--blue); }
+  .sidenav-item a.active { background: var(--blue-light); color: var(--blue); font-weight: 700; border-left: 3px solid var(--blue); padding-left: 9px; }
+  .sidenav-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .icon-blue { background: var(--blue-light); }
+  .icon-green { background: var(--green-light); }
+  .icon-amber { background: #FFF7ED; }
+  .icon-purple { background: #F3F0FF; }
+
+  .faq-content { padding: 48px 64px; }
+  .faq-section { margin-bottom: 52px; scroll-margin-top: 80px; }
+  .faq-section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1.5px solid var(--gray-200); }
+  .faq-section-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .faq-section-title { font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+
+  .accordion { border: 1.5px solid var(--gray-200); border-radius: 12px; overflow: hidden; }
+  .acc-item { border-bottom: 1px solid var(--gray-200); }
+  .acc-item:last-child { border-bottom: none; }
+  .acc-trigger { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; background: var(--white); border: none; cursor: pointer; text-align: left; font-family: var(--sans); font-size: 14px; color: var(--ink); font-weight: 500; transition: all 0.15s; gap: 16px; }
+  .acc-trigger:hover { background: var(--blue-pale); color: var(--blue); }
+  .acc-trigger.open { background: var(--blue-pale); color: var(--blue); font-weight: 600; }
+  .acc-chevron { width: 18px; height: 18px; flex-shrink: 0; color: var(--gray-400); transition: transform 0.25s; }
+  .acc-trigger.open .acc-chevron { transform: rotate(180deg); color: var(--blue); }
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: var(--off-white); }
+  .acc-body.open { max-height: 400px; }
+  .acc-body-inner { padding: 20px 22px; font-size: 14px; color: var(--gray-600); line-height: 1.8; }
+  .acc-body-inner strong { color: var(--ink); font-weight: 700; }
+  .acc-body-inner a { color: var(--blue); text-decoration: underline; }
+
+  .contact-strip { background: var(--blue); padding: 72px 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; overflow: hidden; }
+  .contact-strip::after { content: ''; position: absolute; bottom: -100px; right: 300px; width: 400px; height: 400px; border-radius: 50%; background: rgba(0,196,111,0.08); pointer-events: none; }
+  .contact-title { font-family: var(--display); font-size: 44px; font-weight: 700; color: white; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 14px; }
+  .contact-title em { font-style: normal; color: var(--green); }
+  .contact-sub { font-size: 15px; color: rgba(255,255,255,0.5); line-height: 1.75; margin-bottom: 28px; }
+  .contact-options { display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 1; }
+  .contact-opt { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; transition: all 0.2s; cursor: pointer; text-decoration: none; }
+  .contact-opt:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+  .contact-opt-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .contact-opt-title { font-family: var(--display); font-size: 13px; font-weight: 700; color: white; margin-bottom: 2px; }
+  .contact-opt-sub { font-size: 12px; color: rgba(255,255,255,0.4); }
+  .contact-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-family: var(--display); font-size: 11px; letter-spacing: 0.1em; color: var(--green); text-transform: uppercase; font-weight: 700; margin-bottom: 16px; }
+  .cta-btn-primary { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--blue); background: white; border: none; padding: 13px 28px; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.2s; margin-top: 8px; }
+  .cta-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  footer { background: var(--ink); }
+  .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; padding: 64px 80px 48px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .footer-logo { font-family: var(--display); font-size: 22px; font-weight: 700; color: white; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .footer-logo span { color: var(--green); }
+  .footer-desc { font-size: 13px; color: rgba(255,255,255,0.35); line-height: 1.75; max-width: 240px; margin-bottom: 24px; }
+  .footer-social { display: flex; gap: 10px; }
+  .social-link { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; text-decoration: none; color: rgba(255,255,255,0.4); font-size: 12px; font-family: var(--display); font-weight: 700; transition: all 0.2s; }
+  .social-link:hover { background: var(--blue); color: white; }
+  .footer-col-title { font-family: var(--display); font-size: 11px; font-weight: 700; color: white; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px; }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-links a { text-decoration: none; font-size: 13px; color: rgba(255,255,255,0.4); transition: color 0.2s; }
+  .footer-links a:hover { color: white; }
+  .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding: 22px 80px; }
+  .footer-copy { font-size: 12px; color: rgba(255,255,255,0.2); font-family: var(--display); }
+  .footer-legal { display: flex; gap: 24px; }
+  .footer-legal a { font-size: 12px; color: rgba(255,255,255,0.2); text-decoration: none; transition: color 0.2s; font-family: var(--display); }
+  .footer-legal a:hover { color: rgba(255,255,255,0.5); }
+</style>
+</head>
+<body>
+
+<div class="ticker-bar">
+  <div class="ticker-inner">
+    <span>✓</span> Next-day delivery across 13 districts &nbsp;·&nbsp; <span>✓</span> 5,000+ SKUs in stock &nbsp;·&nbsp; <span>✓</span> DISTRO Credit — buy now, pay in 30 days &nbsp;·&nbsp; <span>✓</span> Bill payments & mobile recharges in-app &nbsp;·&nbsp;
+    <span>✓</span> Next-day delivery across 13 districts &nbsp;·&nbsp; <span>✓</span> 5,000+ SKUs in stock &nbsp;·&nbsp; <span>✓</span> DISTRO Credit — buy now, pay in 30 days &nbsp;·&nbsp; <span>✓</span> Bill payments & mobile recharges in-app &nbsp;·&nbsp;
+  </div>
+</div>
+
+<nav>
+  <a href="distro.html" class="nav-logo">DISTR<span>O</span></a>
+  <ul class="nav-links">
+    <li><a href="distro.html">We are DISTRO</a></li>
+    <li><a href="#">Solutions ▾</a></li>
+    <li><a href="distro-catalogue.html">Catalogue</a></li>
+    <li><a href="#">Blog</a></li>
+    <li><a href="distro-faq.html" class="active">Help + FAQs</a></li>
+    <li><a href="#">Log in</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="#" class="btn-outline">Sign In</a>
+    <a href="#" class="btn-solid">Register Store</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="breadcrumb"><a href="distro.html">Home</a> · FAQs</div>
+  <h1 class="page-title">Get your questions<br><em>answered</em></h1>
+  <div class="faq-search">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="faqSearch" placeholder="Search questions..." oninput="searchFAQ()">
+  </div>
+  <div class="result-count" id="resultCount">56 questions across 8 sections</div>
+</div>
+
+<div class="faq-body">
+  <nav class="faq-sidenav">
+    <div class="sidenav-label">Jump to section</div>
+    <ul class="sidenav-list">
+      <li class="sidenav-item"><a href="#generals" class="active"><span class="sidenav-icon icon-blue">ℹ</span>Generals</a></li>
+      <li class="sidenav-item"><a href="#app"><span class="sidenav-icon icon-green">📱</span>DISTRO App</a></li>
+      <li class="sidenav-item"><a href="#orders"><span class="sidenav-icon icon-blue">📦</span>Orders</a></li>
+      <li class="sidenav-item"><a href="#problems"><span class="sidenav-icon icon-purple">⚠</span>Order Issues</a></li>
+      <li class="sidenav-item"><a href="#credit"><span class="sidenav-icon icon-amber">💳</span>DISTRO Credit</a></li>
+      <li class="sidenav-item"><a href="#payments"><span class="sidenav-icon icon-green">💰</span>Bill Payments</a></li>
+      <li class="sidenav-item"><a href="#agent"><span class="sidenav-icon icon-blue">🤝</span>Field Agents</a></li>
+      <li class="sidenav-item"><a href="#billing"><span class="sidenav-icon icon-purple">🧾</span>Billing</a></li>
+    </ul>
+  </nav>
+
+  <div class="faq-content" id="faqContent">
+
+    <!-- GENERALS -->
+    <section class="faq-section" id="generals">
+      <div class="faq-section-header">
+        <div class="faq-section-icon icon-blue">ℹ</div>
+        <h2 class="faq-section-title">Generals</h2>
+      </div>
+      <div class="accordion">
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">What is DISTRO?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">DISTRO is Nepal's leading B2B grocery wholesale platform. We connect store owners directly to distributors, delivering 5,000+ SKUs at bulk prices to your doorstep within 24 hours — 365 days a year.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">What do I need to do to stock my store?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Simply register your store on the DISTRO app or website. Once verified, you'll be assigned a dedicated field agent who will visit weekly, or you can place digital orders directly from the app. Delivery arrives in 24 hours.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How can I contact DISTRO customer service?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">You can reach us via WhatsApp at <strong>+977 9800000000</strong>, through the in-app chat, or by emailing support@distro.com.np. Our team is available 7 days a week from 6 AM to 10 PM.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Can I refer the service to a friend?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Yes! DISTRO has a referral programme. When you refer a fellow store owner who places their first order, you receive a <strong>₹500 credit</strong> on your next order. Share your unique referral code from the app.</div></div></div>
+      </div>
+    </section>
+
+    <!-- APP -->
+    <section class="faq-section" id="app">
+      <div class="faq-section-header">
+        <div class="faq-section-icon icon-green">📱</div>
+        <h2 class="faq-section-title">DISTRO App</h2>
+      </div>
+      <div class="accordion">
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Where can I download the DISTRO app?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">The DISTRO app is available on the <strong>Google Play Store</strong> and <strong>Apple App Store</strong>. Search for "DISTRO Nepal" or use the download links on our homepage.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How do I register in the DISTRO app?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Download the app, tap "Register My Store", and enter your store name, address, and phone number. You'll receive an OTP to verify. Once verified, your account is active and you can start ordering immediately.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How do I change my registered phone number?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">To change your phone number, go to <strong>Settings → Account → Phone Number</strong> in the app, or contact our customer support directly. Identity verification will be required.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Can I use the service without the app?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Yes. You can place orders via WhatsApp by messaging our business number. You can also request an in-person visit from your DISTRO field agent who will take your order directly.</div></div></div>
+      </div>
+    </section>
+
+    <!-- ORDERS -->
+    <section class="faq-section" id="orders">
+      <div class="faq-section-header">
+        <div class="faq-section-icon icon-blue">📦</div>
+        <h2 class="faq-section-title">Order-related information</h2>
+      </div>
+      <div class="accordion">
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How do I place an order?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Open the app, browse the catalogue by category or search for a product, add items to your cart with the desired quantities, and tap "Place Order". You'll receive a confirmation and estimated delivery time immediately.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">What is the minimum order value?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">The minimum order value is <strong>₹500</strong>. There is no maximum limit. For orders above ₹10,000, you may qualify for additional bulk discounts — contact your field agent for details.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">What is the delivery time?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Orders placed before <strong>2 PM</strong> are delivered the same day in Kathmandu Valley. Orders placed after 2 PM are delivered the following morning. For other districts, delivery is within 24–48 hours depending on your location.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Can I cancel an order?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">You can cancel an order within <strong>30 minutes</strong> of placing it through the app. After that, the order is processed for dispatch and cannot be cancelled.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How do I make payment?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">We accept <strong>cash on delivery</strong>, digital wallets (eSewa, Khalti, IME Pay), bank transfer, and DISTRO Credit (buy now, pay in 15 days). Choose your preferred method at checkout.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Can I reschedule an order?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Yes. Contact customer support via the app or WhatsApp at least 3 hours before the scheduled delivery window and we will reschedule to your preferred time slot.</div></div></div>
+      </div>
+    </section>
+
+    <!-- PROBLEMS -->
+    <section class="faq-section" id="problems">
+      <div class="faq-section-header">
+        <div class="faq-section-icon icon-purple">⚠</div>
+        <h2 class="faq-section-title">Problems with my order</h2>
+      </div>
+      <div class="accordion">
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">My order was not delivered — what do I do?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">First check your order status in the app. If it shows "Delivered" but you haven't received it, contact support immediately with your order number. We'll investigate and, if confirmed, redeliver or issue a full refund within 24 hours.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">My order arrived damaged or with missing items<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Take a photo of the damage and report it within 24 hours via the app (<strong>Order History → Report Issue</strong>) or WhatsApp. We'll arrange a replacement delivery or credit to your account.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">I received the wrong product — what should I do?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Report the wrong item via the app within 24 hours. Keep the incorrectly delivered item — our delivery team will collect it when they bring your correct product, at no extra charge.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How do I return a product?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Returns are accepted within 48 hours for damaged, expired, or incorrectly delivered items. Perishable goods cannot be returned. Contact support to initiate a return — we'll schedule a pickup and process your refund or credit within 3 working days.</div></div></div>
+      </div>
+    </section>
+
+    <!-- CREDIT -->
+    <section class="faq-section" id="credit">
+      <div class="faq-section-header">
+        <div class="faq-section-icon icon-amber">💳</div>
+        <h2 class="faq-section-title">DISTRO Credit</h2>
+      </div>
+      <div class="accordion">
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How much credit do I have with DISTRO Credit?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Your credit limit is based on your order history and business profile. New customers start with <strong>₹5,000</strong>. As you build a track record, your limit increases automatically — up to <strong>₹50,000</strong> for established customers.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">After paying with DISTRO Credit, how long before it renews?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Your credit limit renews immediately upon payment. If you pay your outstanding balance today, you can use the full credit limit on your next order.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">What are the payment terms for DISTRO Credit?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">You have <strong>15 days</strong> from the delivery date to pay. There is <strong>zero interest</strong> during this period. Late payments incur a 2% fee per week on the outstanding amount.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How do I qualify for DISTRO Credit?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">You need to have placed at least 3 orders with DISTRO and maintained a good payment history. Your field agent can check if you're pre-approved and help activate your credit line.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Which payment methods are accepted for DISTRO Credit?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Credit repayment is accepted via cash, eSewa, Khalti, IME Pay, and direct bank transfer. Cash payments can be made to your field agent during their weekly visit.</div></div></div>
+      </div>
+    </section>
+
+    <!-- PAYMENTS -->
+    <section class="faq-section" id="payments">
+      <div class="faq-section-header">
+        <div class="faq-section-icon icon-green">💰</div>
+        <h2 class="faq-section-title">Top-ups and bill payments</h2>
+      </div>
+      <div class="accordion">
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">What bill payments can I make through the DISTRO app?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">You can pay electricity (NEA), water (KUKL/municipality), internet, and cable TV bills directly from the DISTRO app. Just link your consumer number and pay in seconds.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Are there fees for top-ups or bill payments?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Mobile top-ups and bill payments are <strong>free of charge</strong> for DISTRO store partners. There are no hidden fees or service charges.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Which mobile networks can I top up?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">You can top up <strong>Ncell</strong>, <strong>Nepal Telecom (NTC)</strong>, and <strong>Smart Cell</strong> directly from the app. Recharges are instant and available 24/7.</div></div></div>
+      </div>
+    </section>
+
+    <!-- AGENTS -->
+    <section class="faq-section" id="agent">
+      <div class="faq-section-header">
+        <div class="faq-section-icon icon-blue">🤝</div>
+        <h2 class="faq-section-title">Field Agents</h2>
+      </div>
+      <div class="accordion">
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">What is a DISTRO field agent?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">A DISTRO field agent is a dedicated business ally assigned to your store. They visit you weekly, help you place orders, offer product recommendations, assist with DISTRO Credit, and resolve any issues you have.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">How do I get assigned a field agent?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">A field agent is automatically assigned when you register your store. You can also request to meet your agent by clicking "Schedule Agent Visit" on the app or our website.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Can I process a payment through my agent?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Yes. Your field agent can collect cash payments for orders and DISTRO Credit repayments during their regular weekly visit. Always request a receipt.</div></div></div>
+      </div>
+    </section>
+
+    <!-- BILLING -->
+    <section class="faq-section" id="billing">
+      <div class="faq-section-header">
+        <div class="faq-section-icon icon-purple">🧾</div>
+        <h2 class="faq-section-title">Billing</h2>
+      </div>
+      <div class="accordion">
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Where are my invoices?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">All invoices are available in the app under <strong>Account → Invoices</strong>. You can download them as PDFs at any time. Invoices are also sent to your registered email after each delivery.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">Can I receive an invoice with the Rabbit Partner (provider)?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Yes. Contact your field agent or our support team to request branded VAT invoices for your business records. These can be issued within 3 working days of your order delivery.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">When will the invoice be issued?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Invoices are automatically generated upon delivery confirmation. You'll receive an in-app notification and email within 15 minutes of your order being marked as delivered.</div></div></div>
+        <div class="acc-item"><button class="acc-trigger" onclick="toggle(this)">When can I verify my billing number?<svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button><div class="acc-body"><div class="acc-body-inner">Your billing number is displayed in the invoice PDF and in the Order History screen of the app. For any billing disputes, please contact support with your billing number and order date.</div></div></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-strip">
+  <div>
+    <h2 class="contact-title">Still have<br><em>questions?</em></h2>
+    <p class="contact-sub">Our support team is available 7 days a week, 6 AM to 10 PM. Reach us through any channel below.</p>
+    <div class="contact-options">
+      <a href="#" class="contact-opt">
+        <span class="contact-opt-icon">💬</span>
+        <div>
+          <div class="contact-opt-title">In-app chat</div>
+          <div class="contact-opt-sub">Fastest response — usually under 5 minutes</div>
+        </div>
+      </a>
+      <a href="#" class="contact-opt">
+        <span class="contact-opt-icon">📱</span>
+        <div>
+          <div class="contact-opt-title">WhatsApp — +977 9800000000</div>
+          <div class="contact-opt-sub">Send us your question or order list anytime</div>
+        </div>
+      </a>
+      <a href="#" class="contact-opt">
+        <span class="contact-opt-icon">🤝</span>
+        <div>
+          <div class="contact-opt-title">Schedule a field agent visit</div>
+          <div class="contact-opt-sub">Face-to-face help at your store</div>
+        </div>
+      </a>
+    </div>
+  </div>
+  <div style="position:relative;z-index:1;">
+    <div class="contact-eyebrow">Get Started</div>
+    <h3 style="font-family:var(--display);font-size:36px;font-weight:700;color:white;line-height:1.15;letter-spacing:-0.025em;margin-bottom:16px;">Register your<br>store <span style="color:var(--green);">for free</span></h3>
+    <p style="font-size:15px;color:rgba(255,255,255,0.5);line-height:1.75;margin-bottom:28px;max-width:360px;">Join 12,000+ stores across Nepal that trust DISTRO to keep their shelves stocked — 365 days a year.</p>
+    <a href="#" class="cta-btn-primary">Register My Store</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">DISTR<span>O</span></div>
+      <p class="footer-desc">Nepal's leading B2B grocery platform. Stocking 12,000+ stores across 13 districts, 365 days a year.</p>
+      <div class="footer-social">
+        <a href="#" class="social-link">f</a>
+        <a href="#" class="social-link">in</a>
+        <a href="#" class="social-link">ig</a>
+        <a href="#" class="social-link">yt</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Solutions</div>
+      <ul class="footer-links">
+        <li><a href="#">In-Person Sales</a></li>
+        <li><a href="#">Digital Ordering</a></li>
+        <li><a href="#">DISTRO Credit</a></li>
+        <li><a href="#">Utility Payments</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="distro-catalogue.html">Catalogue</a></li>
+        <li><a href="#">Coverage Map</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Support</div>
+      <ul class="footer-links">
+        <li><a href="distro-faq.html">Help & FAQs</a></li>
+        <li><a href="#">Contact Agent</a></li>
+        <li><a href="#">WhatsApp Us</a></li>
+        <li><a href="#">Track Order</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2025 DISTRO. All rights reserved.</span>
+    <div class="footer-legal"><a href="#">Terms & Conditions</a><a href="#">Privacy Policy</a></div>
+  </div>
+</footer>
+
+<script>
+function toggle(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = btn.classList.contains('open');
+  document.querySelectorAll('.acc-trigger.open').forEach(b => {
+    b.classList.remove('open');
+    b.nextElementSibling.classList.remove('open');
+  });
+  if (!isOpen) {
+    btn.classList.add('open');
+    body.classList.add('open');
+  }
+}
+
+function searchFAQ() {
+  const q = document.getElementById('faqSearch').value.toLowerCase();
+  const items = document.querySelectorAll('.acc-item');
+  let count = 0;
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    const show = !q || text.includes(q);
+    item.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+  document.getElementById('resultCount').textContent = q
+    ? `${count} result${count !== 1 ? 's' : ''} for "${q}"`
+    : '56 questions across 8 sections';
+  document.querySelectorAll('.faq-section').forEach(s => {
+    const visible = [...s.querySelectorAll('.acc-item')].some(i => i.style.display !== 'none');
+    s.style.display = visible ? '' : 'none';
+  });
+}
+
+// Active sidenav on scroll
+const sections = document.querySelectorAll('.faq-section');
+const navLinks = document.querySelectorAll('.sidenav-item a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) current = s.id; });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+</body>
+</html>

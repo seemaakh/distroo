@@ -1,18 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
+  View, Text, TextInput, Image, TouchableOpacity, StyleSheet,
+  ActivityIndicator, KeyboardAvoidingView, Platform,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import { api } from "../../lib/api";
-import { colors, spacing, radius } from "../../lib/theme";
+import { colors, spacing, radius, typography } from "../../lib/theme";
 import { AuthStackParamList } from "../../navigation/AuthStack";
 
 type Props = {
@@ -31,7 +25,6 @@ export function OTPScreen({ navigation, route }: Props) {
   const [resending, setResending] = useState(false);
   const inputs = useRef<Array<TextInput | null>>([]);
 
-  // Countdown timer
   useEffect(() => {
     if (countdown <= 0) return;
     const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
@@ -43,31 +36,21 @@ export function OTPScreen({ navigation, route }: Props) {
     const next = [...digits];
     next[idx] = digit;
     setDigits(next);
-    if (digit && idx < OTP_LENGTH - 1) {
-      inputs.current[idx + 1]?.focus();
-    }
+    if (digit && idx < OTP_LENGTH - 1) inputs.current[idx + 1]?.focus();
   };
 
   const handleKeyPress = (key: string, idx: number) => {
-    if (key === "Backspace" && !digits[idx] && idx > 0) {
-      inputs.current[idx - 1]?.focus();
-    }
+    if (key === "Backspace" && !digits[idx] && idx > 0) inputs.current[idx - 1]?.focus();
   };
 
   const handleVerify = async () => {
     const otp = digits.join("");
-    if (otp.length < OTP_LENGTH) {
-      setError("Enter all 6 digits.");
-      return;
-    }
+    if (otp.length < OTP_LENGTH) { setError("Enter all 6 digits."); return; }
     setError("");
     setLoading(true);
     try {
       const res = await api.post("/auth/verify-otp", { phone, otp });
-      navigation.navigate("RegisterStep2", {
-        phone,
-        otpToken: res.data.otpToken,
-      });
+      navigation.navigate("RegisterStep2", { phone, otpToken: res.data.otpToken });
     } catch (err: any) {
       setError(err.message ?? "Invalid OTP.");
     } finally {
@@ -91,35 +74,33 @@ export function OTPScreen({ navigation, route }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <View style={styles.container}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backText}>← Back</Text>
+    <KeyboardAvoidingView style={st.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <View style={st.container}>
+        <TouchableOpacity style={st.backBtn} onPress={() => navigation.goBack()}>
+          <Text style={st.backText}>← Back</Text>
         </TouchableOpacity>
 
-        <Text style={styles.title}>Verify phone</Text>
-        <Text style={styles.subtitle}>
+        <Image
+          source={require('../../../assets/logo-splash.png')}
+          style={st.logo}
+          resizeMode="contain"
+        />
+
+        <Text style={st.title}>Verify your number</Text>
+        <Text style={st.subtitle}>
           Enter the 6-digit code sent to{"\n"}
-          <Text style={styles.phone}>{phone}</Text>
+          <Text style={st.phone}>{phone}</Text>
         </Text>
 
-        <View style={styles.otpRow}>
+        <View style={st.otpRow}>
           {digits.map((digit, idx) => (
             <TextInput
               key={idx}
               ref={(el) => { inputs.current[idx] = el; }}
-              style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
+              style={[st.otpBox, digit ? st.otpBoxFilled : null]}
               value={digit}
               onChangeText={(t) => handleDigit(t, idx)}
-              onKeyPress={({ nativeEvent }) =>
-                handleKeyPress(nativeEvent.key, idx)
-              }
+              onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, idx)}
               keyboardType="number-pad"
               maxLength={1}
               selectTextOnFocus
@@ -128,32 +109,27 @@ export function OTPScreen({ navigation, route }: Props) {
           ))}
         </View>
 
-        {!!error && <Text style={styles.error}>{error}</Text>}
+        {!!error && <Text style={st.error}>{error}</Text>}
 
         <TouchableOpacity
-          style={[styles.btn, loading && styles.btnDisabled]}
+          style={[st.btn, loading && st.btnDisabled]}
           onPress={handleVerify}
           disabled={loading}
-          activeOpacity={0.85}
+          activeOpacity={0.88}
         >
-          {loading ? (
-            <ActivityIndicator color={colors.white} />
-          ) : (
-            <Text style={styles.btnText}>Verify</Text>
-          )}
+          {loading
+            ? <ActivityIndicator color={colors.blue} />
+            : <Text style={st.btnText}>Verify & continue</Text>}
         </TouchableOpacity>
 
-        <View style={styles.resendRow}>
+        <View style={st.resendRow}>
           {countdown > 0 ? (
-            <Text style={styles.countdownText}>
-              Resend in{" "}
-              <Text style={styles.countdownNum}>{countdown}s</Text>
+            <Text style={st.countdownText}>
+              Resend in <Text style={st.countdownNum}>{countdown}s</Text>
             </Text>
           ) : (
             <TouchableOpacity onPress={handleResend} disabled={resending}>
-              <Text style={styles.resendText}>
-                {resending ? "Sending…" : "Resend code"}
-              </Text>
+              <Text style={st.resendText}>{resending ? "Sending…" : "Resend code"}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -162,65 +138,28 @@ export function OTPScreen({ navigation, route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.offWhite },
-  container: {
-    flex: 1,
-    padding: spacing.lg,
-    paddingTop: 60,
-  },
-  backBtn: { marginBottom: spacing.xl },
-  backText: { color: colors.blue, fontSize: 15, fontWeight: "600" },
-  title: { fontSize: 26, fontWeight: "700", color: colors.ink },
-  subtitle: {
-    fontSize: 15,
-    color: colors.gray600,
-    marginTop: spacing.sm,
-    marginBottom: spacing.xl,
-    lineHeight: 22,
-  },
-  phone: { color: colors.ink, fontWeight: "700" },
-  otpRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    justifyContent: "center",
-    marginBottom: spacing.lg,
-  },
+const st = StyleSheet.create({
+  root:      { flex: 1, backgroundColor: '#155ac1' },
+  container: { flex: 1, padding: spacing.lg, paddingTop: 56 },
+  backBtn:   { marginBottom: spacing.xl },
+  backText:  { color: 'rgba(255,255,255,0.85)', fontSize: 15, fontFamily: typography.bodySemiBold },
+  logo:      { width: '70%', height: 72, alignSelf: 'center', marginBottom: spacing.xl },
+  title:     { fontSize: 26, fontFamily: typography.heading, color: colors.white, marginBottom: spacing.xs },
+  subtitle:  { fontSize: 15, fontFamily: typography.body, color: 'rgba(255,255,255,0.75)', marginBottom: spacing.xl, lineHeight: 22 },
+  phone:     { color: colors.white, fontFamily: typography.bodySemiBold },
+  otpRow:    { flexDirection: "row", gap: spacing.sm, justifyContent: "center", marginBottom: spacing.lg },
   otpBox: {
-    width: 46,
-    height: 56,
-    borderWidth: 1.5,
-    borderColor: colors.gray200,
-    borderRadius: radius.md,
-    textAlign: "center",
-    fontSize: 22,
-    fontWeight: "700",
-    color: colors.ink,
-    backgroundColor: colors.white,
+    width: 46, height: 56, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.35)',
+    borderRadius: radius.md, textAlign: "center", fontSize: 22,
+    fontFamily: typography.heading, color: colors.ink, backgroundColor: colors.white,
   },
-  otpBoxFilled: {
-    borderColor: colors.blue,
-    backgroundColor: colors.blueLight,
-  },
-  error: {
-    color: "#DC2626",
-    fontSize: 13,
-    backgroundColor: "#FEF2F2",
-    borderRadius: radius.sm,
-    padding: spacing.sm,
-    marginBottom: spacing.md,
-    textAlign: "center",
-  },
-  btn: {
-    backgroundColor: colors.blue,
-    borderRadius: radius.md,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  btnDisabled: { opacity: 0.6 },
-  btnText: { color: colors.white, fontWeight: "700", fontSize: 16 },
+  otpBoxFilled: { borderColor: colors.white, borderWidth: 2 },
+  error:     { color: "#DC2626", fontSize: 13, backgroundColor: "#FEF2F2", borderRadius: radius.sm, padding: spacing.sm, marginBottom: spacing.md, textAlign: "center", fontFamily: typography.body },
+  btn:       { backgroundColor: colors.white, borderRadius: radius.lg, paddingVertical: 16, alignItems: "center" },
+  btnDisabled: { opacity: 0.7 },
+  btnText:   { color: colors.blue, fontFamily: typography.bodySemiBold, fontSize: 16 },
   resendRow: { alignItems: "center", marginTop: spacing.lg },
-  countdownText: { color: colors.gray400, fontSize: 14 },
-  countdownNum: { fontWeight: "700", color: colors.gray600 },
-  resendText: { color: colors.blue, fontWeight: "700", fontSize: 14 },
+  countdownText: { color: 'rgba(255,255,255,0.65)', fontFamily: typography.body, fontSize: 14 },
+  countdownNum:  { fontFamily: typography.bodySemiBold, color: colors.white },
+  resendText:    { color: colors.white, fontFamily: typography.bodySemiBold, fontSize: 14 },
 });

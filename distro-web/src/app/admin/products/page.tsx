@@ -17,23 +17,32 @@ import {
 import api from "@/lib/api";
 import { formatPrice } from "@/lib/utils";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
+
+/** Turns a relative /uploads/... path into a full URL for Next/Image */
+function resolveImageUrl(src: string | undefined): string | undefined {
+  if (!src) return undefined;
+  if (src.startsWith('http://') || src.startsWith('https://')) return src;
+  return `${API_BASE}${src}`;
+}
+
 interface Product {
-  id: number;
+  id: string;
   name: string;
   brand?: string;
   price: number;
   mrp: number;
   unit: string;
   moq: number;
-  stock: number;
+  stockQty: number;
   active: boolean;
-  image?: string;
-  categoryId?: number;
+  imageUrl?: string;
+  categoryId?: string;
   description?: string;
 }
 
 interface Category {
-  id: number;
+  id: string;
   name: string;
 }
 
@@ -44,9 +53,9 @@ const EMPTY: Partial<Product> = {
   mrp: 0,
   unit: "pcs",
   moq: 1,
-  stock: 0,
+  stockQty: 0,
   active: true,
-  image: "",
+  imageUrl: "",
   description: "",
 };
 
@@ -61,36 +70,56 @@ function ProductsContent() {
   const [editProduct, setEditProduct] = useState<Partial<Product>>(EMPTY);
   const [isEdit, setIsEdit] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [selected, setSelected] = useState<number[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["admin-products", search],
-    queryFn: () =>
-      api
-        .get(`/products?${search ? `q=${search}&` : ""}limit=100&all=1`)
-        .then((r) => (Array.isArray(r.data) ? r.data : r.data.products || [])),
+    queryFn: async () => {
+      const r = await api.get(`/products?${search ? `q=${encodeURIComponent(search)}&` : ""}limit=100&all=1`);
+      const raw: any[] = Array.isArray(r.data) ? r.data : r.data.products || [];
+      // Normalise field names from API (stockQty/imageUrl) to our interface
+      return raw.map((p) => ({
+        ...p,
+        stockQty: p.stockQty ?? p.stock ?? 0,
+        imageUrl: p.imageUrl ?? p.image ?? undefined,
+      })) as Product[];
+    },
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["categories"],
-    queryFn: () => api.get("/categories").then((r) => r.data),
+    queryFn: () => api.get("/categories").then((r) => r.data.categories ?? r.data ?? []),
   });
 
   const saveProduct = useMutation({
-    mutationFn: (data: Partial<Product>) =>
-      isEdit && data.id
-        ? api.patch(`/products/${data.id}`, data)
-        : api.post("/products", data),
+    mutationFn: (data: Partial<Product>) => {
+      // Map frontend field names to API field names
+      const payload: Record<string, any> = {
+        ...data,
+        stockQty: data.stockQty,
+        imageUrl: data.imageUrl,
+      };
+      // Remove any old/aliased keys
+      delete payload.stock;
+      delete payload.image;
+      return isEdit && data.id
+        ? api.patch(`/products/${data.id}`, payload)
+        : api.post("/products", payload);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       setShowModal(false);
       setEditProduct(EMPTY);
+      setSaveError(null);
+    },
+    onError: (err: any) => {
+      setSaveError(err?.response?.data?.error ?? err?.message ?? "Save failed");
     },
   });
 
   const toggleActive = useMutation({
-    mutationFn: ({ id, active }: { id: number; active: boolean }) =>
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
       api.patch(`/products/${id}`, { active }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-products"] }),
   });
@@ -106,6 +135,8 @@ function ProductsContent() {
     },
   });
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -116,9 +147,11 @@ function ProductsContent() {
       const res = await api.post("/products/upload-image", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setEditProduct((p) => ({ ...p, image: res.data.url }));
-    } catch {
-      // Upload failed
+      // API returns { url, imageUrl } — use whichever is present
+      const uploadedUrl: string = res.data.url ?? res.data.imageUrl;
+      setEditProduct((p) => ({ ...p, imageUrl: uploadedUrl }));
+    } catch (err: any) {
+      alert(`Image upload failed: ${err?.response?.data?.error ?? err?.message ?? "Unknown error"}`);
     } finally {
       setUploading(false);
     }
@@ -136,7 +169,7 @@ function ProductsContent() {
     setShowModal(true);
   }
 
-  function toggleSelect(id: number) {
+  function toggleSelect(id: string) {
     setSelected((s) =>
       s.includes(id) ? s.filter((x) => x !== id) : [...s, id]
     );
@@ -144,6 +177,7 @@ function ProductsContent() {
 
   function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSaveError(null);
     saveProduct.mutate(editProduct);
   }
 
@@ -242,9 +276,9 @@ function ProductsContent() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="relative w-10 h-10 bg-blue-pale rounded-lg overflow-hidden">
-                        {p.image ? (
+                        {p.imageUrl ? (
                           <Image
-                            src={p.image}
+                            src={resolveImageUrl(p.imageUrl)!}
                             alt={p.name}
                             fill
                             className="object-cover"
@@ -275,14 +309,14 @@ function ProductsContent() {
                     <td className="px-4 py-3">
                       <span
                         className={`font-grotesk font-semibold text-sm ${
-                          p.stock === 0
+                          p.stockQty === 0
                             ? "text-red-500"
-                            : p.stock <= p.moq * 2
+                            : p.stockQty <= p.moq * 2
                             ? "text-amber-600"
                             : "text-green"
                         }`}
                       >
-                        {p.stock}
+                        {p.stockQty}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -348,9 +382,9 @@ function ProductsContent() {
                 </label>
                 <div className="flex items-center gap-3">
                   <div className="relative w-16 h-16 bg-blue-pale rounded-xl overflow-hidden flex-shrink-0">
-                    {editProduct.image ? (
+                    {editProduct.imageUrl ? (
                       <Image
-                        src={editProduct.image}
+                        src={resolveImageUrl(editProduct.imageUrl)!}
                         alt="preview"
                         fill
                         className="object-cover"
@@ -384,9 +418,9 @@ function ProductsContent() {
                     </p>
                     <input
                       type="url"
-                      value={editProduct.image || ""}
+                      value={editProduct.imageUrl || ""}
                       onChange={(e) =>
-                        setEditProduct((p) => ({ ...p, image: e.target.value }))
+                        setEditProduct((p) => ({ ...p, imageUrl: e.target.value }))
                       }
                       placeholder="https://…"
                       className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-blue"
@@ -432,7 +466,7 @@ function ProductsContent() {
                     onChange={(e) =>
                       setEditProduct((p) => ({
                         ...p,
-                        categoryId: Number(e.target.value) || undefined,
+                        categoryId: e.target.value || undefined,
                       }))
                     }
                     className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:border-blue"
@@ -525,11 +559,11 @@ function ProductsContent() {
                   <input
                     type="number"
                     min={0}
-                    value={editProduct.stock || ""}
+                    value={editProduct.stockQty ?? ""}
                     onChange={(e) =>
                       setEditProduct((p) => ({
                         ...p,
-                        stock: Number(e.target.value),
+                        stockQty: Number(e.target.value),
                       }))
                     }
                     className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue"
@@ -573,6 +607,11 @@ function ProductsContent() {
                 </div>
               </div>
 
+              {saveError && (
+                <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-2">
+                  ⚠️ {saveError}
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={saveProduct.isPending}

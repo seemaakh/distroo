@@ -13,6 +13,7 @@ import {
 import { useAuthStore } from "../../store/authStore";
 import { api } from "../../lib/api";
 import { colors, spacing, radius, shadow } from "../../lib/theme";
+import Constants from "expo-constants";
 
 function CreditBar({ used, limit }: { used: number; limit: number }) {
   const pct = limit > 0 ? Math.min(used / limit, 1) : 0;
@@ -109,10 +110,10 @@ export function AccountScreen() {
       {/* Profile card */}
       <View style={[styles.profileCard, shadow.sm]}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{profile?.name?.charAt(0)?.toUpperCase() ?? "?"}</Text>
+          <Text style={styles.avatarText}>{(profile?.name ?? profile?.storeName ?? "?").charAt(0).toUpperCase()}</Text>
         </View>
         <View style={styles.profileInfo}>
-          <Text style={styles.name}>{profile?.name ?? "—"}</Text>
+          <Text style={styles.name}>{profile?.name ?? profile?.storeName ?? "Store"}</Text>
           {profile?.storeName && <Text style={styles.storeName}>{profile.storeName}</Text>}
           <Text style={styles.phone}>{profile?.phone ?? "—"}</Text>
         </View>
@@ -165,7 +166,7 @@ export function AccountScreen() {
         <Text style={styles.logoutText}>Sign out</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>DISTRO v1.0.0</Text>
+      <Text style={styles.version}>DISTRO v{Constants.expoConfig?.version ?? '1.0.0'}</Text>
 
       {/* Edit Profile Modal */}
       <Modal visible={showEditModal} transparent animationType="slide" onRequestClose={() => setShowEditModal(false)}>

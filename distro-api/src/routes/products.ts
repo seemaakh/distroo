@@ -50,7 +50,13 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
   const limitNum = Math.min(100, Math.max(1, parseInt(limit ?? '20') || 20));
   const skip     = (pageNum - 1) * limitNum;
 
-  const where: Record<string, any> = { active: true };
+  const all = qs(req.query.all as string | string[] | undefined);
+  const q   = qs(req.query.q   as string | string[] | undefined);
+
+  // Override search with 'q' param (used by admin list)
+  const searchTerm = q ?? search;
+
+  const where: Record<string, any> = all === '1' ? {} : { active: true };
   if (categoryId)         where.categoryId = categoryId;
   if (brand)              where.brand = { contains: brand };
   if (inStock === 'true') where.stockQty = { gt: 0 };
@@ -60,10 +66,10 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       ...(maxPrice ? { lte: parseFloat(maxPrice) } : {}),
     };
   }
-  if (search) {
+  if (searchTerm) {
     where.OR = [
-      { name:  { contains: search } },
-      { brand: { contains: search } },
+      { name:  { contains: searchTerm } },
+      { brand: { contains: searchTerm } },
     ];
   }
 
@@ -149,7 +155,9 @@ router.post(
       res.status(400).json({ error: 'No image file provided' });
       return;
     }
-    res.json({ imageUrl: `/uploads/${req.file.filename}` });
+    const relativePath = `/uploads/${req.file.filename}`;
+    // Return both relative (for storage) and absolute (for direct use)
+    res.json({ url: relativePath, imageUrl: relativePath });
   },
 );
 
@@ -167,6 +175,22 @@ router.get(
     res.json({ history });
   },
 );
+
+// ─── GET /api/products/:id — public ──────────────────────────────────────────
+router.get('/:id', async (req: Request, res: Response): Promise<void> => {
+  const id = qs(req.params.id)!;
+  const product = await prisma.product.findUnique({
+    where: { id },
+    select: {
+      id: true, name: true, brand: true, price: true, mrp: true,
+      unit: true, moq: true, stockQty: true, imageUrl: true, active: true,
+      description: true,
+      category: { select: { id: true, name: true, emoji: true } },
+    },
+  });
+  if (!product) { res.status(404).json({ error: 'Product not found' }); return; }
+  res.json(product);
+});
 
 // ─── POST /api/products — create, ADMIN ──────────────────────────────────────
 router.post('/', requireAuth, isAdmin, async (req: Request, res: Response): Promise<void> => {
@@ -222,6 +246,38 @@ router.put('/:id', requireAuth, isAdmin, async (req: Request, res: Response): Pr
       ...(active      !== undefined && { active }),
       ...(description !== undefined && { description }),
       ...(imageUrl    !== undefined && { imageUrl }),
+    },
+  });
+  res.json({ product });
+});
+
+// ─── PATCH /api/products/:id — alias for PUT (used by web frontend) ───────────
+router.patch('/:id', requireAuth, isAdmin, async (req: Request, res: Response): Promise<void> => {
+  const id = qs(req.params.id)!;
+  const { name, brand, unit, price, mrp, moq, stockQty, stock, active, description, imageUrl, image, categoryId } = req.body as {
+    name?: string; brand?: string; unit?: string; price?: number; mrp?: number; moq?: number;
+    stockQty?: number; stock?: number; active?: boolean; description?: string;
+    imageUrl?: string; image?: string; categoryId?: string;
+  };
+
+  // Accept both field name variants (frontend uses stock/image, API uses stockQty/imageUrl)
+  const resolvedStockQty = stockQty ?? stock;
+  const resolvedImageUrl = imageUrl ?? image;
+
+  const product = await prisma.product.update({
+    where: { id },
+    data: {
+      ...(name               !== undefined && { name }),
+      ...(brand              !== undefined && { brand }),
+      ...(unit               !== undefined && { unit }),
+      ...(price              !== undefined && { price }),
+      ...(mrp                !== undefined && { mrp }),
+      ...(moq                !== undefined && { moq }),
+      ...(resolvedStockQty   !== undefined && { stockQty: resolvedStockQty }),
+      ...(active             !== undefined && { active }),
+      ...(description        !== undefined && { description }),
+      ...(resolvedImageUrl   !== undefined && { imageUrl: resolvedImageUrl }),
+      ...(categoryId         !== undefined && { categoryId }),
     },
   });
   res.json({ product });

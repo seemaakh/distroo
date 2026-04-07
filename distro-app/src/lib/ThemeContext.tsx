@@ -13,7 +13,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue>({
   scheme: "light",
   isDark: false,
-  toggleTheme: () => {},
+  toggleTheme: () => { },
 });
 
 const THEME_KEY = "distro_theme";
@@ -29,13 +29,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           setScheme(saved);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const toggleTheme = () => {
     const next: ColorScheme = scheme === "light" ? "dark" : "light";
     setScheme(next);
-    SecureStore.setItemAsync(THEME_KEY, next).catch(() => {});
+    SecureStore.setItemAsync(THEME_KEY, next).catch(() => { });
   };
 
   return (

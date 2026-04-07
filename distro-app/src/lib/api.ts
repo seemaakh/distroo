@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import { useAuthStore } from "../store/authStore";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.1.100:3001/api";
 
@@ -18,10 +19,17 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Surface error messages cleanly
+// Handle responses — auto-logout on 401 (expired / invalid token)
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
+  async (err) => {
+    if (err.response?.status === 401) {
+      // Clear SecureStore + reset Zustand auth state in one call.
+      // RootNavigator observes `token` and will automatically switch
+      // to AuthStack (Login screen) when it becomes null.
+      await useAuthStore.getState().logout();
+    }
+
     const message =
       err.response?.data?.message ?? err.message ?? "Network error";
     return Promise.reject(new Error(message));

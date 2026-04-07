@@ -40,4 +40,31 @@ router.get('/email-logs', requireAuth, isAdmin, async (req: Request, res: Respon
   res.json({ logs, total, page: pageNum, pages: Math.ceil(total / limitNum) });
 });
 
+// ─── Announcements CRUD ───────────────────────────────────────────────────────
+router.get('/announcements', requireAuth, isAdmin, async (_req: Request, res: Response): Promise<void> => {
+  const announcements = await prisma.announcement.findMany({ orderBy: { createdAt: 'desc' } });
+  res.json({ announcements });
+});
+
+router.post('/announcements', requireAuth, isAdmin, async (req: Request, res: Response): Promise<void> => {
+  const { text, active = true } = req.body;
+  if (!text?.trim()) { res.status(400).json({ error: 'text is required' }); return; }
+  const announcement = await prisma.announcement.create({ data: { text: text.trim(), active } });
+  res.status(201).json({ announcement });
+});
+
+router.patch('/announcements/:id', requireAuth, isAdmin, async (req: Request, res: Response): Promise<void> => {
+  const { text, active } = req.body;
+  const data: Record<string, any> = {};
+  if (text !== undefined) data.text = text.trim();
+  if (active !== undefined) data.active = active;
+  const announcement = await prisma.announcement.update({ where: { id: req.params.id }, data });
+  res.json({ announcement });
+});
+
+router.delete('/announcements/:id', requireAuth, isAdmin, async (req: Request, res: Response): Promise<void> => {
+  await prisma.announcement.delete({ where: { id: req.params.id } });
+  res.json({ ok: true });
+});
+
 export default router;

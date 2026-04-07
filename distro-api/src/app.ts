@@ -45,8 +45,8 @@ app.use('/api/admin',     adminRouter);
 app.use('/api',           publicRouter);  // announcements, districts, categories
 
 const PORT = parseInt(process.env.API_PORT || '3001');
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`DISTRO API running on 127.0.0.1:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`DISTRO API running on 0.0.0.0:${PORT} (LAN-accessible)`);
   startCleanupCron();
 });
 

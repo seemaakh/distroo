@@ -32,7 +32,7 @@ async function loadFonts() {
 
 export default function App() {
   useEffect(() => {
-    setupNotifications().catch(() => {});
+    setupNotifications().catch(() => { });
     loadFonts();
   }, []);
 

@@ -159,8 +159,7 @@ export function RootNavigator() {
     (async () => {
       await loadToken();
       const done = await SecureStore.getItemAsync(ONBOARDING_KEY).catch(() => null);
-      setOnboardingDone(false); // DEMO: always show onboarding — revert after demo
-      void done;
+      setOnboardingDone(done === "true");
       await SplashScreen.hideAsync().catch(() => {});
       setPhase("splash");
     })();
